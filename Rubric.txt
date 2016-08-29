@@ -1,0 +1,68 @@
+Compiling
+Program compiles without error.
+Line number:
+
+Running
+Program runs without error according to requirements.
+Line number:
+
+daemonID init
+Client & Server processes initialize daemonID field of gameBoard
+Line number: 780 & 1101
+
+send SIGHUP
+Goldchase process sends SIGHUP to client/server when joining or leaving game
+Line number: 415 & 655
+
+Socket init
+When a client connects to the socket, the map is successfully sent across the socket.
+The client successfully initializes shared memory.
+Line number: 1081 to 1100
+
+Trap SIGHUP
+When Goldchase game processes join or leave the game on the client,
+the client daemon traps the SIGHUP signal sent by the game process and
+writes to the socket according the "Socket Player" protocol. [same behavior for the server]
+Line number:  967 & 689
+
+Process "Socket Player"
+When server reads the "Socket Player" protocol from the socket,
+if a player joined the game on the client, the server creates that player's message queue
+(and registers to receive SIGUSR2 if a message is placed on the queue).
+If a player left the game on the client, the server removes that player's message queue.
+[same behavior for a client reading the "Socket Player" protocol]
+Line number: 874 & 1123
+
+Trap SIGUSR2
+When a message is sent from a game process on the client to a game process on the server,
+the client daemon traps the SIGUSR2 signal, reads the message on the queue,
+and writes the message to the socket according to the "Socket Message" protocol.
+[same behavior going the other direction: server to client]
+Line number: Not implemented, tried but removed as it was not working.
+          then caused problems.
+
+Process "Socket Message"
+When the server reads the "Socket Message" protocol from the socket,
+the message is written to the message queue of the intended recipient
+(and that message is displayed on the recipient's screen)
+[same behavior for client reading "Socket Message" protocol]
+Line number: Not implemented, tried but removed as it was not working.
+          then caused problems.
+
+Trap SIGUSR1
+When a move is made by a game process on the client,
+the client daemon traps the SIGUSR1 signal sent by the game process and
+writes the map data to the socket according to the "Socket Map" protocol.
+[same behavior going the other direction: server to client]
+Line number: 937 & 659
+
+Process "Socket Map"
+When the server reads the "Socket Map" protocol,
+it updates the shared memory and sends a SIGUSR1 signal to each game process
+running on the server (which the game processes trap and redraw their maps).
+[same behavior for client reading "Socket Message" protocol]
+Line number: 926 and 1181
+
+Daemon integration
+The client and server are integrated into the goldchase executable to start as daemons.
+Line number: -
